@@ -89,5 +89,4 @@
     ((and (not (equal? (caar engagements) p2)) (preferable? p1-list (caar engagements) p2) (preferable? (get-pref-list pref2 (caar engagements)) p1 (cdar engagements))) #t)
     (else (better-match-exists? p1 p2 p1-list pref2 (cdr engagements)))))
 
-
       

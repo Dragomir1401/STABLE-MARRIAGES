@@ -39,7 +39,10 @@
 ; (get-pref-list wpref 'ana) => '(bobo adi cos)
 ; Folosiți minim o funcțională și minim o funcție anonimă.
 (define (get-pref-list pref person)
-  (cdar (filter (λ (L) (equal? (car L) person)) pref)))
+   (if (not (null? (filter (λ (L) (equal? (car L) person)) pref))) 
+       (cdr (car (filter (λ (L) (equal? (car L) person)) pref)))
+       ('())
+       ))
 
 
 ; TODO 4
@@ -53,6 +56,7 @@
 ; Folosiți funcția member.
 (define (preferable? pref-list x y)
   (list? (member y (member x pref-list))))
+
 
 
 ; TODO 5
@@ -138,6 +142,11 @@
 ; Precizări (aspecte care se garantează, nu trebuie verificate):
 ; - fiecare cuplu din lista engagements are pe prima poziție
 ;   o femeie
-(define (stable-match? engagements mpref wpref)
-  'your-code-here)
+(define (stable-matchhh? engagements mpref wpref)
+  (cond
+    ((null? engagements) #t)
+    ((better-match-exists? (caar engagements) (cdar engagements) (get-pref-list wpref (caar engagements)) mpref engagements) #f)
+    (else (stable-match? (cdr engagements) mpref wpref))))
 
+(define (stable-match? engagements mpref wpref)
+  (null? (filter (λ (l) (better-match-exists? (cdr l) (car l) (get-pref-list mpref (cdr l)) wpref engagements)) engagements)))

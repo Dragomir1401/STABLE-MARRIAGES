@@ -7,7 +7,9 @@
 ; bărbaților și calculează lista bărbaților din problemă.
 ; Folosiți recursivitate pe stivă.
 (define (get-men mpref)
-  car(mpref))
+  (if (null? mpref)
+     '()
+     (cons (caar mpref) (get-men(cdr mpref)))))
 
 
 ; TODO 2
@@ -15,8 +17,12 @@
 ; femeilor și calculează lista femeilor din problemă.
 ; Folosiți recursivitate pe coadă.
 (define (get-women wpref)
-  'your-code-here)
+  (women-rec wpref '()))
 
+(define (women-rec wpref acc)
+  (if (null? wpref)
+     acc
+     (cons (caar wpref) (women-rec (cdr wpref) acc))))
 
 ; TODO 3
 ; Implementați o funcție recursivă care primește o listă de liste
@@ -30,7 +36,9 @@
 ; preferințelor unei persoane p, ne referim la o listă care conține
 ; doar persoanele de sex opus, nu și pe p pe prima poziție.
 (define (get-pref-list pref person)
-  'your-code-here)
+  (if (equal? (caar pref) person)
+      (cdr(car pref))
+       (get-pref-list (cdr pref) person)))
 
 
 ; TODO 4
@@ -42,7 +50,12 @@
 ; Nu folosiți operatori condiționali, folosiți în schimb operatori
 ; logici pentru a obține același efect.
 (define (preferable? pref-list x y)
-  'your-code-here)
+   (and (not (null? pref-list))
+       (or (equal? (car pref-list) x)
+           (and (not (equal? (car pref-list) y))
+                (preferable? (cdr pref-list) x y)))))
+  
+       
 
 
 ; TODO 5
@@ -53,7 +66,10 @@
 ; întoarce false.
 ; Folosiți cond.
 (define (get-partner engagements person)
-  'your-code-here)
+  (cond
+    ((null? engagements) #f)
+    ((equal? (caar engagements) person) (cdr (car engagements)))
+    (else (get-partner (cdr engagements) person))))
 
 
 ; TODO 6
@@ -68,4 +84,10 @@
 ;   - p1 îl preferă pe p' în raport cu p2
 ;   - p' îl preferă pe p1 în raport cu persoana cu care este logodit
 (define (better-match-exists? p1 p2 p1-list pref2 engagements)
-  'your-code-here)
+  (cond
+    ((null? engagements) #f)
+    ((and (not (equal? (caar engagements) p2)) (preferable? p1-list (cdar engagements) p2) (preferable? (get-pref-list pref2 (cdar engagements)) p1 (caar engagements))) #t)
+    (else (better-match-exists? p1 p2 p1-list pref2 (cdr engagements)))))
+
+
+      
