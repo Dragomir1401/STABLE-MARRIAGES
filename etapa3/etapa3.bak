@@ -22,6 +22,15 @@
 ; Folosiți una sau mai multe dintre expresiile let, let*, letrec,
 ; named let pentru a vă putea conforma acestor restricții.
 
+(define men-preferences-0
+  '([adi  ana  bia cora]
+    [bobo cora ana bia ]
+    [cos  cora bia ana ]))
+(define women-preferences-0
+  '([ana  bobo adi cos ]
+    [bia  adi  cos bobo]
+    [cora bobo cos adi ]))
+
 (define (length lst)
   (cond
     [(empty? lst)  0]
@@ -31,19 +40,16 @@
 (define (get-unstable-couples engagements mpref wpref)
   (for engagements (- (length engagements) 1) mpref wpref))
 
-
-
 (define (for eng max mpref wpref)
   (let iter ([cnt max] [result '()])            
     (if (equal? cnt -1)                           
         result
-        (let* ([couple (list-ref eng cnt)] [first (car couple)] [second (cdr couple)]
-                                           [reversed-list (map (λ (pair) (cons (cdr pair) (car pair))) eng)])
+        (let* ([element (list-ref eng cnt)] [first (car element)] [second (cdr element)])
           (if (or (better-match-exists? first second
-                                    (get-pref-list wpref first) mpref reversed-list)
+                                    (get-pref-list wpref first) mpref  eng)
                   (better-match-exists? second first
-                                    (get-pref-list mpref second) wpref eng) )                                       
-              (iter (- cnt 1) (cons couple result))
+                                    (get-pref-list mpref second) wpref eng))                                        
+              (iter (- cnt 1) (cons element result))
               (iter (- cnt 1) result))
           ))))
 

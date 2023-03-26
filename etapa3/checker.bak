@@ -153,8 +153,7 @@
 
 (exercițiul 1 : 40 puncte)
 (check-part 'a (/ 1 5)
-            (let ([result
-                   (map (λ (eng) (get-unstable-couples eng men-preferences-0 women-preferences-0))
+            (let ([result (map (λ (eng) (get-unstable-couples eng men-preferences-0 women-preferences-0))
                                '(((ana . adi) (bia . cos) (cora . bobo))
                                  ((ana . cos) (bia . adi) (cora . bobo))))])
               (if (equal? (car result) 'your-code-here)

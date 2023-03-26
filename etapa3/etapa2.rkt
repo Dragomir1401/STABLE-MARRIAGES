@@ -39,7 +39,10 @@
 ; (get-pref-list wpref 'ana) => '(bobo adi cos)
 ; Folosiți minim o funcțională și minim o funcție anonimă.
 (define (get-pref-list pref person)
-   (cdr (car (filter (λ (L) (equal? (car L) person)) pref))))
+   (if (not (null? (filter (λ (L) (equal? (car L) person)) pref))) 
+       (cdr (car (filter (λ (L) (equal? (car L) person)) pref)))
+       ('())
+       ))
 
 
 ; TODO 4
@@ -53,6 +56,12 @@
 ; Folosiți funcția member.
 (define (preferable? pref-list x y)
   (list? (member y (member x pref-list))))
+
+(define (preferableee? pref-list x y)
+   (and (not (null? pref-list))
+       (or (equal? (car pref-list) x)
+           (and (not (equal? (car pref-list) y))
+                (preferable? (cdr pref-list) x y)))))
 
 
 ; TODO 5
@@ -84,7 +93,9 @@
   (if (get-first-partner engagements person)
       (cdr (get-first-partner engagements person))
       #f))
-  
+
+
+
 
 ; TODO 7
 ; Implementați recursiv funcționala change-first care primește
@@ -123,7 +134,8 @@
 (define (better-match-exists? p1 p2 p1-list pref2 engagements)
   (cond
     ((null? engagements) #f)
-    ((and (not (equal? (caar engagements) p2)) (preferable? p1-list (caar engagements) p2) (preferable? (get-pref-list pref2 (caar engagements)) p1 (cdar engagements))) #t)
+    ((and (not (equal? (caar engagements) p2)) (preferable? p1-list (caar engagements) p2)
+          (preferable? (get-pref-list pref2 (caar engagements)) p1 (cdar engagements))) #t)
     (else (better-match-exists? p1 p2 p1-list pref2 (cdr engagements)))))
 
 
@@ -138,9 +150,7 @@
 ; Precizări (aspecte care se garantează, nu trebuie verificate):
 ; - fiecare cuplu din lista engagements are pe prima poziție
 ;   o femeie
-(define (stable-match? engagements mpref wpref)
-  (cond
-    ((null? engagements) #t)
-    ((better-match-exists? (caar engagements) (cdar engagements) (get-pref-list wpref (caar engagements)) mpref engagements) #f)
-    (else (stable-match? (cdr engagements) mpref wpref))))
 
+
+(define (stable-match? engagements mpref wpref)
+  (null? (filter (λ (l) (better-match-exists? (cdr l) (car l) (get-pref-list mpref (cdr l)) wpref engagements)) engagements)))
