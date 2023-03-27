@@ -1,5 +1,5 @@
 #lang racket
- (require racket/trace)
+(require racket/trace)
 
 (require "etapa2.rkt")
 
@@ -77,7 +77,7 @@
     [cora bobo cos adi ]))
 
 (define (engage free-men engagements mpref wpref)
-  (let iter ( [cnt (length free-men)]  [result '()]  [free-men free-men] [engagements engagements] [w-index 0] )
+  (let iter ( [cnt (length free-men)] [free-men free-men] [engagements engagements] [w-index 0] )
     (if (equal? cnt 0)
         engagements
         
@@ -88,60 +88,17 @@
                [new-pair (cons w man)] )
           
           (if (not w-engagement)
-              (iter [- cnt 1] [cons new-pair result] [filter (λ (free-man) (not (equal? free-man man))) free-men] [cons new-pair engagements] 0 )
+              (iter [- cnt 1]  [filter (λ (free-man) (not (equal? free-man man))) free-men] [cons new-pair engagements] 0 )
               
               (let* ( [m1 (cdr w-engagement)] )
                 
                 (if (preferable? w-pref-list man m1)
-                    (iter cnt [cons new-pair result]
+                    (iter cnt
                           [cons m1 (filter (λ (free-man) (not (equal? free-man man))) free-men)]
                           [cons new-pair (filter (λ (pair) (not (equal? (car pair) w))) engagements)] 0 )
                     
-                    (iter cnt result free-men engagements [+ w-index 1] )
+                    (iter cnt free-men engagements [+ w-index 1] )
                     )))))))
-
-
-(define (engage3 free-men engagements mpref wpref)
-  (let iter ([cnt (- (length free-men) 1)] [result '()])
-    (if (equal? cnt -1)
-        result
-        (let* ([man (list-ref free-men cnt)]
-               [w (car (get-pref-list mpref man))]
-               [w-pref-list (get-pref-list wpref w)]
-               [current-engagement (find-first (λ (L) (equal? (cdr L) w)) engagements)])
-          (cond
-            [(not current-engagement)
-             (iter (- cnt 1) (cons (cons man w) result))]
-            [(preferable? w-pref-list man (car current-engagement))
-             (iter (- cnt 1)
-                   (append result
-                           (list (cons man w))
-                           (filter (λ (pair) (and (not (equal? (car pair) w)) (not (equal? (cdr pair) man)))) engagements)))]
-            [else
-             (iter (- cnt 1) result)]
-            )))))
-
-
-(define (engage4 free-men engagements mpref wpref)
-  (let iter ( [cnt (- (length free-men) 1)]  [result '()]  [free-men free-men] )
-    (if (equal? cnt -1)
-        result
-        
-        (let* ([man (list-ref free-men cnt)]
-               [w (car (get-pref-list mpref man))]
-               [w-pref-list (get-pref-list wpref w)])
-          
-          (if (not (find-first (λ(L) (or (equal? (car L) w) (equal? (cdr L) w))) engagements))
-              (iter (- cnt 1) (cons (cons w man) engagements) free-men)
-              
-              (let* ([m1 (cdr (find-first (λ(L) (equal? (car L) w)) engagements))])
-                
-                (if (preferable? w-pref-list man m1)
-                    (iter (- cnt 1) (cons (cons w man) (filter (λ (pair) (not (equal? (car pair) w))) engagements)) (cons m1 free-men) )
-                    
-                    (if (equal? cnt 0)
-                        (cons m1 (iter (- cnt 1) result (cons man (filter (λ (man) (not (equal? man m1))) free-men))))
-                        (iter (- cnt 1) result free-men)))))))))
 
 
 
@@ -153,7 +110,7 @@
 ; de preferințe feminine wpref și calculează o listă completă de
 ; logodne stabile conform acestor preferințe.
 (define (gale-shapley mpref wpref)
-  'your-code-here)
+  (engage (get-men mpref) '() mpref wpref))
 
 
 ; TODO 4
