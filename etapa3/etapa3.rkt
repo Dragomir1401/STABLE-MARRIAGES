@@ -1,4 +1,5 @@
 #lang racket
+ (require racket/trace)
 
 (require "etapa2.rkt")
 
@@ -75,41 +76,29 @@
     [bia  adi  cos bobo]
     [cora bobo cos adi ]))
 
-(define (engage1 free-men engagements mpref wpref)
-  (let iter ( [cnt (- (length free-men) 1)]  [result '()] )
-    (if (equal? cnt -1)
-        result
-        (let* ( [man  (list-ref free-men cnt) ] [w  (car (get-pref-list mpref man)) ] [w-pref-list (get-pref-list wpref w)] )
-      
-          (if (not (find-first (λ(L) (or (equal? (car L) w) (equal? (cdr L) w))) engagements))  
-              (cons result (cons w man))
-          
-              (let* ([m1  (cdr (find-first (λ(L) (or (equal? (car L) w) (equal? (cdr L) w))) engagements))])
-            
-                (if (preferable? w-pref-list man m1)
-                    (and (cons free-men m1) (cons result (cons w man)) (filter (λ (pair) (not (equal? (car pair) w))) engagements))
-                
-                    (iter (- cnt 1))           
-                    )))))))
-
-(define (engage2 free-men engagements mpref wpref)
-  (let iter ( [cnt (- (length free-men) 1)]  [result '()]  [free-men free-men] )
-    (if (equal? cnt -1)
-        result
+(define (engage free-men engagements mpref wpref)
+  (let iter ( [cnt (length free-men)]  [result '()]  [free-men free-men] [engagements engagements] [w-index 0] )
+    (if (equal? cnt 0)
+        engagements
         
-        (let* ([man (list-ref free-men cnt)]
-               [w (car (get-pref-list mpref man))]
-               [w-pref-list (get-pref-list wpref w)])
+        (let* ([man (list-ref free-men (- cnt 1))]
+               [w (list-ref (get-pref-list mpref man) w-index)]
+               [w-pref-list (get-pref-list wpref w)]
+               [w-engagement (find-first (λ(L) (equal? (car L) w) ) engagements)]
+               [new-pair (cons w man)] )
           
-          (if (not (find-first (λ(L) (or (equal? (car L) w) (equal? (cdr L) w))) engagements))
-              (cons (cons w man) result)
+          (if (not w-engagement)
+              (iter [- cnt 1] [cons new-pair result] [filter (λ (free-man) (not (equal? free-man man))) free-men] [cons new-pair engagements] 0 )
               
-              (let* ([m1 (cdr (find-first (λ(L) (equal? (car L) w)) engagements))])
+              (let* ( [m1 (cdr w-engagement)] )
                 
                 (if (preferable? w-pref-list man m1)
-                    (iter (- cnt 1) (cons (cons w man) (filter (λ (pair) (not (equal? (car pair) w))) engagements))  free-men )
+                    (iter cnt [cons new-pair result]
+                          [cons m1 (filter (λ (free-man) (not (equal? free-man man))) free-men)]
+                          [cons new-pair (filter (λ (pair) (not (equal? (car pair) w))) engagements)] 0 )
                     
-                    (iter (- cnt 1) result free-men))))))))
+                    (iter cnt result free-men engagements [+ w-index 1] )
+                    )))))))
 
 
 (define (engage3 free-men engagements mpref wpref)
