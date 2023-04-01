@@ -1,4 +1,5 @@
 #lang racket
+(require racket/trace)
 
 (require "etapa2.rkt")
 
@@ -22,34 +23,18 @@
 ; Folosiți una sau mai multe dintre expresiile let, let*, letrec,
 ; named let pentru a vă putea conforma acestor restricții.
 
-(define men-preferences-0
-  '([adi  ana  bia cora]
-    [bobo cora ana bia ]
-    [cos  cora bia ana ]))
-(define women-preferences-0
-  '([ana  bobo adi cos ]
-    [bia  adi  cos bobo]
-    [cora bobo cos adi ]))
-
-(define (length lst)
-  (cond
-    [(empty? lst)  0]
-    [(cons? lst)   (+ 1 (length (rest lst)))]))
-
 
 (define (get-unstable-couples engagements mpref wpref)
-  (for engagements (- (length engagements) 1) mpref wpref))
-
-(define (for eng max mpref wpref)
-  (let iter ([cnt max] [result '()])            
+  (let iter ([cnt (- (length engagements) 1)] [result '()])            
     (if (equal? cnt -1)                           
         result
-        (let* ([element (list-ref eng cnt)] [first (car element)] [second (cdr element)])
+        (let* ([couple (list-ref engagements cnt)] [first (car couple)] [second (cdr couple)]
+                                                   [reversed-list (map (λ (pair) (cons (cdr pair) (car pair))) engagements)])
           (if (or (better-match-exists? first second
-                                    (get-pref-list wpref first) mpref  eng)
+                                        (get-pref-list wpref first) mpref reversed-list)
                   (better-match-exists? second first
-                                    (get-pref-list mpref second) wpref eng))                                        
-              (iter (- cnt 1) (cons element result))
+                                        (get-pref-list mpref second) wpref engagements) )                                       
+              (iter (- cnt 1) (cons couple result))
               (iter (- cnt 1) result))
           ))))
 
@@ -77,8 +62,32 @@
 ; Folosiți named let pentru orice proces recursiv ajutător (deci nu
 ; veți defini funcții ajutătoare recursive).
 ; Folosiți let și/sau let* pentru a evita calcule duplicate.
+
 (define (engage free-men engagements mpref wpref)
-  'your-code-here)
+  (let iter ( [cnt (length free-men)] [free-men free-men] [engagements engagements] [w-index 0] )
+    (if (equal? cnt 0)
+        engagements
+        
+        (let* ([man (list-ref free-men (- cnt 1))]
+               [w (list-ref (get-pref-list mpref man) w-index)]
+               [w-pref-list (get-pref-list wpref w)]
+               [w-engagement (find-first (λ(L) (equal? (car L) w) ) engagements)]
+               [new-pair (cons w man)] )
+          
+          (if (not w-engagement)
+              (iter [- cnt 1]  [filter (λ (free-man) (not (equal? free-man man))) free-men] [cons new-pair engagements] 0 )
+              
+              (let* ( [m1 (cdr w-engagement)] )
+                
+                (if (preferable? w-pref-list man m1)
+                    (iter cnt
+                          [cons m1 (filter (λ (free-man) (not (equal? free-man man))) free-men)]
+                          [cons new-pair (filter (λ (pair) (not (equal? (car pair) w))) engagements)] 0 )
+                    
+                    (iter cnt free-men engagements [+ w-index 1] )
+                    )))))))
+
+
 
 
 ; TODO 3
@@ -88,7 +97,7 @@
 ; de preferințe feminine wpref și calculează o listă completă de
 ; logodne stabile conform acestor preferințe.
 (define (gale-shapley mpref wpref)
-  'your-code-here)
+  (engage (get-men mpref) '() mpref wpref))
 
 
 ; TODO 4
@@ -97,5 +106,6 @@
 ; care apar în perechi.
 ; Folosiți funcționale, fără recursivitate explicită.
 (define (get-couple-members pair-list)
-  (foldr (λ (L acc) (cons ((cdr L) (cons (car L) acc)))) '() pair-list))
+  (foldr (λ (L acc) (cons (cdr L) (cons (car L) acc))) '() pair-list))
+
 

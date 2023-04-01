@@ -23,22 +23,19 @@
 ; Folosiți una sau mai multe dintre expresiile let, let*, letrec,
 ; named let pentru a vă putea conforma acestor restricții.
 
-;(define (get-unstable-couplesss engagements mpref wpref)
-; (for engagements (- (length engagements) 1) mpref wpref))
-
 
 (define (get-unstable-couples engagements mpref wpref)
-  (let iter ([cnt (- (length engagements) 1)] [result '()])            
-    (if (equal? cnt -1)                           
+  (let iter ([eng engagements] [result '()])            
+    (if (null? eng)                           
         result
-        (let* ([couple (list-ref engagements cnt)] [first (car couple)] [second (cdr couple)]
+        (let* ([couple (car eng)] [first (car couple)] [second (cdr couple)]
                                                    [reversed-list (map (λ (pair) (cons (cdr pair) (car pair))) engagements)])
           (if (or (better-match-exists? first second
                                         (get-pref-list wpref first) mpref reversed-list)
                   (better-match-exists? second first
                                         (get-pref-list mpref second) wpref engagements) )                                       
-              (iter (- cnt 1) (cons couple result))
-              (iter (- cnt 1) result))
+              (iter (cdr eng) (cons couple result))
+              (iter (cdr eng) result))
           ))))
 
 
@@ -65,16 +62,6 @@
 ; Folosiți named let pentru orice proces recursiv ajutător (deci nu
 ; veți defini funcții ajutătoare recursive).
 ; Folosiți let și/sau let* pentru a evita calcule duplicate.
-
-
-(define mpref
-  '([adi  ana  bia cora]
-    [bobo cora ana bia ]
-    [cos  cora bia ana ]))
-(define wpref
-  '([ana  bobo adi cos ]
-    [bia  adi  cos bobo]
-    [cora bobo cos adi ]))
 
 (define (engage free-men engagements mpref wpref)
   (let iter ( [cnt (length free-men)] [free-men free-men] [engagements engagements] [w-index 0] )
