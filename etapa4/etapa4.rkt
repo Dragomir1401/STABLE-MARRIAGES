@@ -53,6 +53,14 @@
 ;   întoarcă în aceeași listă atât informația despre cine din
 ;   cameră este logodit, cât și despre cine este singur
 
+(define men-preferences-0
+  '([adi  ana  bia cora]
+    [bobo cora ana bia ]
+    [cos  cora bia ana ]))
+(define women-preferences-0
+  '([ana  bobo adi cos ]
+    [bia  adi  cos bobo]
+    [cora bobo cos adi ]))
 (define men-preferences-1
   '([abe  abi  eve  cath ivy  jan  dee  fay  bea  hope gay ]
     [bob  cath hope abi  dee  eve  fay  bea  jan  ivy  gay ]
@@ -84,7 +92,10 @@
 
       ;((and (not (null? result)) (equal? stop 2) (stable-match? (filter (λ (pair) (not (equal? (car pair) #f) )) result) pref1 pref2)) result)
 
-      ((null? person-pref-list) (cons (cons  #f person1) engagements))
+      ((null? person-pref-list) (cons (cons #f person1) (filter
+                                                           (λ (pair)                                    
+                                                             (not (and (equal? (car pair) #f) (equal? (cdr pair) person1))))
+                                                           engagements)))
 
       ; ((equal? cnt 2) engagements)
         
@@ -92,8 +103,10 @@
               (let iter-eng ( [eng engagements] )
                 (if (null? eng)
                     (iter-pref-list person1 engagements 0 [cdr person-pref-list] cnt)
-                    (let* ( [current-pair (car (filter (λ(pair) (not (equal? #f (car pair)))) eng))] [prefered-person-pref-list (get-pref-list pref2 (car current-pair))]
-                                                                                                     [new-healthy-pair (cons (car current-pair) person1)] [new-temporary-pair (cons #f (cdr current-pair))] )
+                    
+                    (let* ( [current-pair (car (filter (λ(pair) (not (equal? #f (car pair)))) eng))]
+                            [prefered-person-pref-list (get-pref-list pref2 (car current-pair))]
+                            [new-healthy-pair (cons (car current-pair) person1)] [new-temporary-pair (cons #f (cdr current-pair))] )
                       
                       (if (equal? prefered-pers (car current-pair))
                           (if (preferable? prefered-person-pref-list person1 (cdr current-pair))
@@ -101,10 +114,11 @@
                                               [cons new-healthy-pair
                                                     (cons new-temporary-pair
                                                           (filter
-                                                           (λ (pair)
-                                                             (and
-                                                              (and (not (equal? (car pair) (car current-pair))) (not (equal? (cdr pair) (cdr current-pair)))))
-                                                             (not (equal? #f (car pair)))) engagements))]
+                                                           (λ (pair)                                    
+                                                             (and (not (equal? (car pair) (car current-pair)))
+                                                                  (not (equal? (cdr pair) (cdr current-pair)))
+                                                                  (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
+                                                           engagements))]
                                               0 [get-pref-list pref1 (cdr current-pair)] [+ cnt 1] )
 
                          
