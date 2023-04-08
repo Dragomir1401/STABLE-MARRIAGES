@@ -86,9 +86,9 @@
 
 
 (define (match person engagements pref1 pref2 queue)
-  (let iter-pref-list ( [person1 person] [engagements engagements] [person-pref-list (get-pref-list pref1 person)] )
+  (let iter-pref-list ( [person1 person] [engagements engagements] [person-pref-list (get-pref-list pref1 person)] [found 0] )
     (cond
-      
+      ((equal? found 1) engagements)
       ((null? person-pref-list) (cons (cons #f person1) (filter
                                                          (λ (pair)                                    
                                                            (not (and (equal? (car pair) #f) (equal? (cdr pair) person1))))
@@ -97,27 +97,38 @@
       (else (let* ( [prefered-pers (car person-pref-list)] )
               (let iter-eng ( [eng engagements] )
                 (if (null? eng)
-                    (iter-pref-list person1 engagements [cdr person-pref-list] )
+                    (iter-pref-list person1 engagements [cdr person-pref-list] 0 )
                     
-                    (let* ( [current-pair (car (filter (λ(pair) (not (equal? #f (car pair)))) eng))]
+                    (let* ( [current-pair (car (filter (λ (pair) (not (equal? #f (car pair)))) eng))]
                             [prefered-person-pref-list (get-pref-list pref2 (car current-pair))]
                             [new-healthy-pair (cons (car current-pair) person1)] [new-temporary-pair (cons #f (cdr current-pair))] )
                       
                       (if (equal? prefered-pers (car current-pair))
-                          (if (preferable? prefered-person-pref-list person1 (cdr current-pair))
-                              (iter-pref-list [cdr current-pair]
+                          (if (not (cdr current-pair))
+                              (iter-pref-list person1
                                               [cons new-healthy-pair
-                                                    (cons new-temporary-pair
-                                                          (filter
-                                                           (λ (pair)                                    
-                                                             (and (not (equal? (car pair) (car current-pair)))
-                                                                  (not (equal? (cdr pair) (cdr current-pair)))
-                                                                  (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
-                                                           engagements))]
-                                              [get-pref-list pref1 (cdr current-pair)] )
+                                                    (filter
+                                                     (λ (pair)                                    
+                                                       (and (not (equal? (car pair) (car current-pair)))
+                                                            (not (equal? (cdr pair) (cdr current-pair)))
+                                                            (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
+                                                     engagements)]
+                                              person-pref-list 1 )
+                              
+                              (if (preferable? prefered-person-pref-list person1 (cdr current-pair))
+                                  (iter-pref-list [cdr current-pair]
+                                                  [cons new-healthy-pair
+                                                        (cons new-temporary-pair
+                                                              (filter
+                                                               (λ (pair)                                    
+                                                                 (and (not (equal? (car pair) (car current-pair)))
+                                                                      (not (equal? (cdr pair) (cdr current-pair)))
+                                                                      (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
+                                                               engagements))]
+                                                  [get-pref-list pref1 (cdr current-pair)] 0 )
 
                          
-                              (iter-pref-list person1 engagements [cdr person-pref-list] ))
+                                  (iter-pref-list person1 engagements [cdr person-pref-list] 0 )))
                  
                           (iter-eng [cdr eng]) )))))))))
           
@@ -138,24 +149,33 @@
 ; - persoanele nelogodite din cameră apar în engagements sub forma
 ;   (#f . nume-bărbat) sau (nume-femeie . #f)
 (define (path-to-stability engagements mpref wpref queue)
-  (let iter-queue ( [q queue] [eng engagements]  )
-    (let ( [men (get-men mpref)] [women (get-women wpref)] [rev-eng (map (λ (pair) (cons (cdr pair) (car pair))) engagements)] )
+  (let iter-queue ( [q queue] [eng engagements] [previous 0] )
+    (let* ( [men (get-men mpref)] [women (get-women wpref)] [rev-eng (map (λ (pair) (cons (cdr pair) (car pair))) eng)] )
       (if (null? q)
-          engagements
+          (if (equal? previous -1)
+              
+               rev-eng
+         
+               eng)
+          
           (cond
-          ((not (null? (filter (λ (man) (equal? man (car q))) men)))
-           (iter-queue [cdr q] [match (car q) engagements mpref wpref q]))
+            ((and (not (null? (filter (λ (man) (equal? man (car q))) men))) (or (equal? previous 1) (equal? previous 0)))
+             (iter-queue [cdr q] [match (car q) eng mpref wpref q] 1 ))
+
+            ((and (not (null? (filter (λ (man) (equal? man (car q))) men))) (or (equal? previous -1) (equal? previous 0)))
+             (iter-queue [cdr q] [match (car q) rev-eng mpref wpref q] 1 ))
           
-          ((not (null? (filter (λ (woman) (equal? woman (car q))) women)))
-           (iter-queue [cdr q] [match (car q) rev-eng wpref mpref q]))
+            ((and (not (null? (filter (λ (woman) (equal? woman (car q))) women))) (or (equal? previous 1) (equal? previous 0)))
+             (iter-queue [cdr q] [match (car q) rev-eng wpref mpref q] -1 ))
+
+            ((and (not (null? (filter (λ (woman) (equal? woman (car q))) women))) (or (equal? previous -1) (equal? previous 0)))
+             (iter-queue [cdr q] [match (car q) eng wpref mpref q] -1 ))
           
-          (else (iter-queue [cdr q] engagements))
-                                                             )))))
+            (else (iter-queue [cdr q] eng 1))
+            )))))
      
 
-; (iter-queue [cdr q] [match (car q) eng wpref mpref q])
-; (iter-queue [cdr q] [match (car q) eng mpref wpref q])))))
-                   
+          
 
 
 ; TODO 3
