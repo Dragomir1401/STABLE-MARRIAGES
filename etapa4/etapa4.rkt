@@ -53,14 +53,7 @@
 ;   întoarcă în aceeași listă atât informația despre cine din
 ;   cameră este logodit, cât și despre cine este singur
 
-(define men-preferences-0
-  '([adi  ana  bia cora]
-    [bobo cora ana bia ]
-    [cos  cora bia ana ]))
-(define women-preferences-0
-  '([ana  bobo adi cos ]
-    [bia  adi  cos bobo]
-    [cora bobo cos adi ]))
+
 (define men-preferences-1
   '([abe  abi  eve  cath ivy  jan  dee  fay  bea  hope gay ]
     [bob  cath hope abi  dee  eve  fay  bea  jan  ivy  gay ]
@@ -95,7 +88,6 @@
     [hal  abi  eve  hope fay  ivy  cath jan  bea  gay  dee ]
     [ian  hope cath dee  gay  bea  abi  fay  ivy  jan  eve ]
     [jon  abi  fay  jan  gay  eve  bea  dee  cath ivy  hope]))
-
 (define women-preferences-2
   '([abi  bob  fred jon  gav  ian  abe  dan  ed   col  hal ]
     [bea  bob  abe  col  fred gav  dan  ian  ed   jon  hal ]
@@ -107,6 +99,60 @@
     [hope gav  jon  bob  abe  ian  dan  hal  ed   col  fred]
     [ivy  ian  col  hal  gav  fred bob  abe  ed   jon  dan ]
     [jan  ed   hal  gav  abe  bob  jon  col  ian  fred dan ]))
+
+(define men-preferences-3
+  '([abe  abi  eve  cath ivy  jan  dee  fay  bea  hope gay ]
+    [bob  abi hope  cath dee  eve  fay  bea  jan  ivy  gay ]
+    [col  hope eve  abi  dee  bea  fay  ivy  gay  cath jan ]
+    [dan  ivy  bea  dee  gay  hope eve  jan  fay  cath abi ]
+    [ed   fay  dee  bea  cath jan  eve  abi  ivy  hope gay ]
+    [fred bea  abi  dee  gay  eve  ivy  cath jan  hope fay ]
+    [gav  gay  eve  ivy  bea  cath abi  dee  hope jan  fay ]
+    [hal  abi  eve  hope fay  ivy  cath jan  bea  gay  dee ]
+    [ian  hope cath dee  gay  bea  abi  fay  ivy  jan  eve ]
+    [jon  abi  fay  jan  gay  eve  bea  dee  cath ivy  hope]))
+(define women-preferences-3
+  '([abi  bob  fred jon  gav  ian  abe  dan  ed   col  hal ]
+    [bea  bob  abe  col  fred gav  dan  ian  ed   jon  hal ]
+    [cath fred bob  ed   gav  hal  col  ian  abe  dan  jon ]
+    [dee  fred jon  col  abe  ian  hal  gav  dan  bob  ed  ]
+    [eve  jon  hal  fred dan  abe  gav  col  ed   ian  bob ]
+    [fay  bob  abe  ed   ian  jon  dan  fred gav  col  hal ]
+    [gay  jon  gav  hal  fred bob  abe  col  ed   dan  ian ]
+    [hope gav  jon  bob  abe  ian  dan  hal  ed   col  fred]
+    [ivy  ian  col  hal  gav  fred bob  abe  ed   jon  dan ]
+    [jan  ed   hal  gav  abe  bob  jon  col  ian  fred dan ]))
+
+(define men-preferences-4
+  '([abe  abi  eve  cath ivy  jan  dee  fay  bea  hope gay ]
+    [bob  abi hope  cath dee  eve  fay  bea  jan  ivy  gay ]
+    [col  hope eve  abi  dee  bea  fay  ivy  gay  cath jan ]
+    [dan  jan  bea  dee  gay  hope eve  ivy  fay  cath abi ]
+    [ed   fay  dee  bea  cath jan  eve  abi  ivy  hope gay ]
+    [fred bea  abi  dee  gay  eve  ivy  cath jan  hope fay ]
+    [gav  gay  eve  ivy  bea  cath abi  dee  hope jan  fay ]
+    [hal  abi  eve  hope fay  ivy  cath jan  bea  gay  dee ]
+    [ian  hope cath dee  gay  bea  abi  fay  ivy  jan  eve ]
+    [jon  abi  fay  jan  gay  eve  bea  dee  cath ivy  hope]))
+(define women-preferences-4
+  '([abi  bob  fred jon  gav  ian  abe  dan  ed   col  hal ]
+    [bea  bob  abe  col  fred gav  dan  ian  ed   jon  hal ]
+    [cath fred bob  ed   gav  hal  col  ian  abe  dan  jon ]
+    [dee  fred jon  col  abe  ian  hal  gav  dan  bob  ed  ]
+    [eve  jon  fred dan  abe  gav  col  hal  ed   ian  bob ]
+    [fay  bob  abe  ed   ian  jon  dan  fred gav  col  hal ]
+    [gay  jon  gav  hal  fred bob  abe  col  ed   dan  ian ]
+    [hope gav  jon  bob  abe  ian  dan  hal  ed   col  fred]
+    [ivy  ian  col  hal  gav  fred bob  abe  ed   jon  dan ]
+    [jan  ed   hal  gav  abe  bob  jon  col  ian  fred dan ]))
+
+(define (list->stream l)
+  (foldr (lambda (x acc) (stream-cons x acc)) empty-stream l))
+(define pref-stream-b
+  (list->stream (list (cons men-preferences-1 women-preferences-1)
+                      (cons men-preferences-2 women-preferences-2)
+                      (cons men-preferences-3 women-preferences-3)
+                      (cons men-preferences-4 women-preferences-4))))
 
 
 (define (match person engagements pref1 pref2 queue)
@@ -246,7 +292,23 @@
 ; Trebuie să lucrați cu interfața pentru fluxuri. Dacă rezolvați
 ; problema folosind liste și doar convertiți în/din fluxuri,
 ; punctajul pe acest exercițiu se anulează în totalitate.
+(define (build-stable-matches-streaaam pref-stream)
+  (let iter-stream ( [str pref-stream]  )
+    (if (stream-empty? pref-stream)
+        empty-stream
+        (stream-cons  (gale-shapley [car (stream-first str)] [cdr (stream-first str)]) (iter-stream [stream-rest str]) )
+        )))
+
 (define (build-stable-matches-stream pref-stream)
-  'your-code-here)
+  (let iter-stream ([str pref-stream] [prev-solution empty-stream])
+    (if (stream-empty? str)
+        empty-stream
+        (let* ([preferences (stream-first str)]
+               [current-solution (gale-shapley (car preferences) (cdr preferences))]
+               [updated-solution (update-stable-match current-solution (car preferences) (cdr preferences))])
+          (stream-cons current-solution (iter-stream (stream-rest str) updated-solution)))))) 
+
+
+
 
 
