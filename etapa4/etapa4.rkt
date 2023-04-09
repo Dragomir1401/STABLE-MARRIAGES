@@ -110,7 +110,7 @@
                                                     (filter
                                                      (λ (pair)                                    
                                                        (and (not (equal? (car pair) (car current-pair)))
-                                                            (not (equal? (cdr pair) (cdr current-pair)))
+                                                           ; (not (equal? (cdr pair) (cdr current-pair)))
                                                             (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
                                                      engagements)]
                                               person-pref-list 1 )
@@ -171,7 +171,7 @@
             ((and (not (null? (filter (λ (woman) (equal? woman (car q))) women))) (or (equal? previous -1) (equal? previous 0)))
              (iter-queue [cdr q] [match (car q) eng wpref mpref q] -1 ))
           
-            (else (iter-queue [cdr q] eng 1))
+            (else (iter-queue [cdr q] eng 0))
             )))))
      
 
