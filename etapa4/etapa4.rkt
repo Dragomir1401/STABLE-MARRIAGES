@@ -84,6 +84,30 @@
     [ivy  ian  col  hal  gav  fred bob  abe  ed   jon  dan ]
     [jan  ed   hal  gav  abe  bob  jon  col  ian  fred dan ]))
 
+(define men-preferences-2
+  '([abe  abi  eve  cath ivy  jan  dee  fay  bea  hope gay ]
+    [bob  abi hope  cath dee  eve  fay  bea  jan  ivy  gay ]
+    [col  hope eve  abi  dee  bea  fay  ivy  gay  cath jan ]
+    [dan  ivy  bea  dee  gay  hope eve  jan  fay  cath abi ]
+    [ed   jan  dee  bea  cath fay  eve  abi  ivy  hope gay ]
+    [fred bea  abi  dee  gay  eve  ivy  cath jan  hope fay ]
+    [gav  gay  eve  ivy  bea  cath abi  dee  hope jan  fay ]
+    [hal  abi  eve  hope fay  ivy  cath jan  bea  gay  dee ]
+    [ian  hope cath dee  gay  bea  abi  fay  ivy  jan  eve ]
+    [jon  abi  fay  jan  gay  eve  bea  dee  cath ivy  hope]))
+
+(define women-preferences-2
+  '([abi  bob  fred jon  gav  ian  abe  dan  ed   col  hal ]
+    [bea  bob  abe  col  fred gav  dan  ian  ed   jon  hal ]
+    [cath fred bob  ed   gav  hal  col  ian  abe  dan  jon ]
+    [dee  fred jon  col  abe  ian  hal  gav  dan  bob  ed  ]
+    [eve  jon  hal  fred dan  abe  gav  col  ed   ian  bob ]
+    [fay  bob  abe  ed   ian  jon  dan  fred gav  col  hal ]
+    [gay  jon  gav  hal  fred bob  abe  col  ed   dan  ian ]
+    [hope gav  jon  bob  abe  ian  dan  hal  ed   col  fred]
+    [ivy  ian  col  hal  gav  fred bob  abe  ed   jon  dan ]
+    [jan  ed   hal  gav  abe  bob  jon  col  ian  fred dan ]))
+
 
 (define (match person engagements pref1 pref2 queue)
   (let iter-pref-list ( [person1 person] [engagements engagements] [person-pref-list (get-pref-list pref1 person)] [found 0] )
@@ -110,7 +134,6 @@
                                                     (filter
                                                      (λ (pair)                                    
                                                        (and (not (equal? (car pair) (car current-pair)))
-                                                           ; (not (equal? (cdr pair) (cdr current-pair)))
                                                             (not (and (equal? (car pair) #f) (equal? (cdr pair) person1)))))
                                                      engagements)]
                                               person-pref-list 1 )
@@ -154,9 +177,9 @@
       (if (null? q)
           (if (equal? previous -1)
               
-               rev-eng
+              rev-eng
          
-               eng)
+              eng)
           
           (cond
             ((and (not (null? (filter (λ (man) (equal? man (car q))) men))) (or (equal? previous 1) (equal? previous 0)))
@@ -192,9 +215,22 @@
 ; Precizări (aspecte care se garantează, nu trebuie verificate):
 ; - fiecare cuplu din lista engagements are pe prima poziție
 ;   o femeie
-(define (update-stable-match engagements mpref wpref)
-  'your-code-here)
+(define (form-queue engagements mpref wpref)
+  (let iter-unstables ( [unstable-couples (get-unstable-couples engagements mpref wpref)] [queue '()] )
+    (if (null? unstable-couples)
+        queue
+        (let ( [curr-couple (car unstable-couples)] )
+          (iter-unstables [cdr unstable-couples] [cons (cdr curr-couple) (cons (car curr-couple) queue)] )))))
 
+(define (filter-eng engagements mpref wpref queue)
+  (let iter-unstable-queue ( [q queue] [engagements engagements] )
+    (if (null? q)
+        engagements
+        (iter-unstable-queue [cdr q] [filter (λ (pair) (not (or (equal? (car pair) (car q)) (equal? (cdr pair) (car q))))) engagements] ))))
+
+(define (update-stable-match engagements mpref wpref)
+  (let ( [queue (form-queue engagements mpref wpref)] )
+    (path-to-stability [filter-eng engagements mpref wpref queue] mpref wpref queue)))
 
 ; TODO 4
 ; Implementați funcția build-stable-matches-stream care primește
